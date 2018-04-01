@@ -243,7 +243,7 @@ variable_specifier:
     gen = boption(GEN) 
     t = typename
     id = IDENTIFIER
-    init = expr_or_void(preceded(EQ, expression))
+    init = option(preceded(EQ, expression))
     { node ($startpos, $endpos) (Decl(gen, id, t, init)) } 
 
 function_specifier:
@@ -251,7 +251,7 @@ function_specifier:
     t = typename
     name = IDENTIFIER
     LPAR par = separated_list(COMMA, IDENTIFIER) RPAR
-    init = expr_or_void(preceded(EQ, expression))
+    init = option(preceded(EQ, expression))
     { node ($startpos, $endpos) (FunctionDecl(gen, name, par, t, init)) }
 
 (* types*)

@@ -59,13 +59,19 @@ let rec print_ast p_id llabel ast =
             let s = "Decl" ^ (if gen then "(gen): " else ": ") ^ name in
             let current = print_n s in
             print_type current "type" dtype;
-            print_ast current "init" init
+            (match init with
+            | Some i ->
+                    print_ast current "init" i
+            | None -> ())
     | FunctionDecl (gen, name, parms ,dtype, init) ->
             let name = name ^ "(" ^ (String.concat ", " parms) ^ ")" in
             let s = "Fun decl." ^ (if gen then "(gen):" else ":") ^ name in
             let current = print_n s in
             print_type current "type" dtype;
-            print_ast current "init" init
+            (match init with
+            | Some i ->
+                    print_ast current "init" i
+            | None -> ())
     | IfThenElse(cond, bthen, belse) ->
             let current = print_n "IfThenElse" in
             print_ast current "if" cond;

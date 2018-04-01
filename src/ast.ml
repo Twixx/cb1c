@@ -39,8 +39,8 @@ and node_expr = {pos:info; expr: expr; mutable dtype: dtype}
 and expr =
     | Root of node_expr list
     | Return of node_expr
-    | Decl of bool * string * dtype * node_expr
-    | FunctionDecl of bool * string * string list * dtype * node_expr 
+    | Decl of bool * string * dtype * node_expr option
+    | FunctionDecl of bool * string * string list * dtype * node_expr option 
     | IfThenElse of node_expr * node_expr * node_expr
     | BinaryOperation of binary_op * node_expr * node_expr
     | UnaryOperation of unary_op * node_expr

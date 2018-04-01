@@ -46,7 +46,10 @@ let rec annotate env ast =
             add_type (new_gen_type ());
             env
     | Decl (gen, name, dtype, init) ->
-            eannotate env init;
+            (match init with
+            | Some i ->
+                    eannotate env i;
+            | None -> ());
             let t = (match dtype with
             | Undefined -> new_gen_type ()
             (* add func check *)
@@ -69,7 +72,10 @@ let rec annotate env ast =
                     raise_infer "fun types doesn't match the names number")
             in
             add_type ftype;
-            eannotate inner_env init;
+            (match init with
+            | Some i ->
+                    eannotate inner_env i
+            | None -> ());
             new_env
     | IfThenElse(cond, bthen, belse) ->
             let new_env = annotate env cond in
@@ -166,14 +172,16 @@ and collect ast =
             collect_l l t
     | Return e ->
             (collect e) @ [(t, Void)]
-    | Decl (gen, name, dtype, init) ->
+    | Decl (gen, name, dtype, Some(init)) ->
             (collect init) @ [(t, init.dtype)]
-    | FunctionDecl (gen, name, params, dtype, init) ->
+    | Decl _ -> []
+    | FunctionDecl (gen, name, params, dtype, Some(init)) ->
             (* FIXME Return somewhere return last problem*) 
             let ret_t = (match ast.dtype with
             | FunctionType(r, _) -> r
             | _ -> raise_infer "not a function") in
             (collect init) @ [(init, ret_t)]
+    | FunctionDecl _ -> []
     | IfThenElse(cond, bthen, belse) ->
             (collect cond) @ (collect bthen) @ (collect belse) @
             [(cond, def_scalar (Bool S32));
@@ -219,11 +227,11 @@ and collect ast =
             []*)
     | Block e_list ->
             collect_l e_list t
-    | IntLiteral(i) -> []
-    | FloatLiteral f -> []
-    | StringLiteral s -> []
-    | BoolLiteral b -> []
-    | Identifier id -> []
+    | IntLiteral _
+    | FloatLiteral _
+    | StringLiteral _
+    | BoolLiteral _
+    | Identifier _ -> []
 
 let rec substitute x u t =
     let subs = substitute x u in
@@ -284,10 +292,12 @@ let rec map_expr fexpr ftype ast =
             List.iter recall l
     | Return e ->
             recall e
-    | Decl (gen, name, dtype, init) ->
+    | Decl (gen, name, dtype, Some(init)) ->
             recall init
-    | FunctionDecl (gen, name, params, dtype, init) ->
+    | Decl _ -> ()
+    | FunctionDecl (gen, name, params, dtype, Some(init)) ->
             recall init
+    | FunctionDecl _ -> ()
     | IfThenElse(cond, bthen, belse) ->
             recall cond;
             recall bthen;
